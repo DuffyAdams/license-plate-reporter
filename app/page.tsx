@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import citiesData from '../cities.json';
 
 const US_STATES = [
   { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' }, { code: 'AZ', name: 'Arizona' },
@@ -25,17 +26,19 @@ const US_STATES = [
   { code: 'OTHER', name: 'Other' }
 ];
 
+const ALL_CITIES = Object.values(citiesData).flat();
+
 const VIOLATIONS = [
-  { value: 'speeding', label: 'Speeding', emoji: '💨' },
-  { value: 'reckless driving', label: 'Reckless Driving', emoji: '⚠️' },
-  { value: 'texting / phone use', label: 'Texting / Phone Use', emoji: '📱' },
-  { value: 'red light / stop sign', label: 'Red Light / Stop Sign', emoji: '🛑' },
-  { value: 'illegal parking', label: 'Illegal Parking', emoji: '🅿️' },
-  { value: 'tailgating', label: 'Tailgating', emoji: '🚗' },
-  { value: 'unsafe lane change', label: 'Unsafe Lane Change', emoji: '↔️' },
-  { value: 'failure to yield', label: 'Failure To Yield', emoji: '⚡' },
-  { value: 'hit and run', label: 'Hit And Run', emoji: '💥' },
-  { value: 'suspected dui', label: 'Suspected DUI', emoji: '🍺' }
+  { value: 'speeding', label: 'Speeding', emoji: '💨', color: '#f59e0b' }, // orange
+  { value: 'reckless driving', label: 'Reckless Driving', emoji: '⚠️', color: '#dc2626' }, // red
+  { value: 'texting / phone use', label: 'Texting / Phone Use', emoji: '📱', color: '#8b5cf6' }, // purple
+  { value: 'red light / stop sign', label: 'Red Light / Stop Sign', emoji: '🛑', color: '#ef4444' }, // red
+  { value: 'illegal parking', label: 'Illegal Parking', emoji: '🅿️', color: '#6b7280' }, // gray
+  { value: 'tailgating', label: 'Tailgating', emoji: '🚗', color: '#f97316' }, // orange
+  { value: 'unsafe lane change', label: 'Unsafe Lane Change', emoji: '↔️', color: '#eab308' }, // yellow
+  { value: 'failure to yield', label: 'Failure To Yield', emoji: '⚡', color: '#3b82f6' }, // blue
+  { value: 'hit and run', label: 'Hit And Run', emoji: '💥', color: '#dc2626' }, // red
+  { value: 'suspected dui', label: 'Suspected DUI', emoji: '🍺', color: '#7c3aed' } // violet
 ];
 
 const VEHICLE_TYPES = [
@@ -79,9 +82,29 @@ const MAKES = [
   'Jeep', 'Dodge', 'Ram', 'GMC', 'Mazda', 'Volvo', 'Porsche'
 ];
 
+interface Report {
+  id: string;
+  plate: string;
+  state_code: string;
+  city: string;
+  violation: string;
+  vehicle_type: string;
+  color: string;
+  make?: string;
+  model?: string;
+  year?: number;
+  gender_observed?: string;
+  description?: string;
+  reporter_email?: string;
+  contact_ok: boolean;
+  incident_at: string;
+  created_at: string;
+  media_count: number;
+}
+
 export default function LicensePlateReporter() {
   const [view, setView] = useState('form');
-  const [reports, setReports] = useState([]);
+  const [reports, setReports] = useState<Report[]>([]);
   const [formData, setFormData] = useState({
     plate: '',
     state_code: '',
@@ -97,8 +120,9 @@ export default function LicensePlateReporter() {
     reporter_email: '',
     contact_ok: false
   });
-  const [errors, setErrors] = useState({});
-  const [mediaFiles, setMediaFiles] = useState([]);
+  const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [filters, setFilters] = useState({
@@ -107,8 +131,32 @@ export default function LicensePlateReporter() {
     violation: '',
     vehicle_type: ''
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleInputChange = (field, value) => {
+  // Fetch reports on component mount
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  const fetchReports = async (filterParams?: { state: string; city: string; violation: string; vehicle_type: string }) => {
+    try {
+      const params = new URLSearchParams();
+      if (filterParams?.state) params.append('state', filterParams.state);
+      if (filterParams?.city) params.append('city', filterParams.city);
+      if (filterParams?.violation) params.append('violation', filterParams.violation);
+      if (filterParams?.vehicle_type) params.append('vehicle_type', filterParams.vehicle_type);
+
+      const response = await fetch(`/api/reports?${params}`);
+      if (response.ok) {
+        const data = await response.json();
+        setReports(data);
+      }
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+    }
+  };
+
+  const handleInputChange = (field: string, value: any) => {
     if (field === 'plate') {
       value = value.toUpperCase().replace(/\s/g, '').slice(0, 10);
     }
@@ -116,34 +164,64 @@ export default function LicensePlateReporter() {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+
+    // Update city suggestions when state changes or city input changes
+    if (field === 'state_code' || field === 'city') {
+      updateCitySuggestions(field === 'state_code' ? value : formData.state_code, field === 'city' ? value : formData.city);
+    }
   };
 
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    const validFiles = files.filter(file => {
+  const updateCitySuggestions = (stateCode: string, cityInput: string) => {
+    if (!stateCode) {
+      setCitySuggestions([]);
+      return;
+    }
+
+    const stateName = US_STATES.find(state => state.code === stateCode)?.name;
+    if (!stateName || !(stateName in citiesData)) {
+      setCitySuggestions([]);
+      return;
+    }
+
+    const stateCities = citiesData[stateName as keyof typeof citiesData];
+    const filteredCities = stateCities.filter((city: string) =>
+      city.toLowerCase().startsWith(cityInput.toLowerCase())
+    );
+    setCitySuggestions(filteredCities.slice(0, 10)); // Limit to 10 suggestions
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter((file: File) => {
       const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime'];
       return validTypes.includes(file.type) && file.size <= 25 * 1024 * 1024;
     });
     setMediaFiles(prev => [...prev, ...validFiles].slice(0, 5));
   };
 
-  const removeFile = (index) => {
+  const removeFile = (index: number) => {
     setMediaFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const validateForm = () => {
-    const newErrors = {};
-    
+    const newErrors: Record<string, string> = {};
+
     if (!formData.plate || formData.plate.length < 2 || formData.plate.length > 10) {
       newErrors.plate = 'Plate must be 2-10 characters';
     }
     if (!formData.state_code) newErrors.state_code = 'State is required';
     if (!formData.city || formData.city.length < 2) newErrors.city = 'City is required';
+    else if (formData.state_code) {
+      const stateName = US_STATES.find(state => state.code === formData.state_code)?.name;
+      if (stateName && stateName in citiesData && !citiesData[stateName as keyof typeof citiesData].includes(formData.city)) {
+        newErrors.city = 'Please select a valid city from the list';
+      }
+    }
     if (!formData.violation) newErrors.violation = 'Violation is required';
     if (!formData.vehicle_type) newErrors.vehicle_type = 'Vehicle type is required';
     if (!formData.color) newErrors.color = 'Color is required';
-    
-    if (formData.year && (formData.year < 1900 || formData.year > new Date().getFullYear())) {
+
+    if (formData.year && (parseInt(formData.year) < 1900 || parseInt(formData.year) > new Date().getFullYear())) {
       newErrors.year = 'Invalid year';
     }
 
@@ -151,16 +229,28 @@ export default function LicensePlateReporter() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
-    const newReport = {
+    const newReport: Report = {
       id: Date.now().toString(),
-      ...formData,
+      plate: formData.plate,
+      state_code: formData.state_code,
+      city: formData.city,
+      violation: formData.violation,
+      vehicle_type: formData.vehicle_type,
+      color: formData.color,
+      make: formData.make || undefined,
+      model: formData.model || undefined,
+      year: formData.year ? parseInt(formData.year) : undefined,
+      gender_observed: formData.gender_observed || undefined,
+      description: formData.description || undefined,
+      reporter_email: formData.reporter_email || undefined,
+      contact_ok: formData.contact_ok,
       incident_at: new Date().toISOString(),
       created_at: new Date().toISOString(),
       media_count: mediaFiles.length
@@ -197,8 +287,8 @@ export default function LicensePlateReporter() {
     return true;
   });
 
-  const formatTimeAgo = (dateString) => {
-    const seconds = Math.floor((new Date() - new Date(dateString)) / 1000);
+  const formatTimeAgo = (dateString: string) => {
+    const seconds = Math.floor((new Date().getTime() - new Date(dateString).getTime()) / 1000);
     if (seconds < 60) return 'just now';
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes}m ago`;
@@ -298,13 +388,21 @@ export default function LicensePlateReporter() {
                 <label className="block text-sm font-medium mb-2">
                   City <span className="text-[#f87171]">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={formData.city}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
-                  placeholder="San Diego"
-                  className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:border-transparent"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    placeholder="San Diego"
+                    list="city-suggestions"
+                    className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:border-transparent"
+                  />
+                  <datalist id="city-suggestions">
+                    {citySuggestions.map(city => (
+                      <option key={city} value={city} />
+                    ))}
+                  </datalist>
+                </div>
                 {errors.city && <p className="text-[#f87171] text-sm mt-1">{errors.city}</p>}
               </div>
 
@@ -604,7 +702,13 @@ export default function LicensePlateReporter() {
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 bg-[#f87171] bg-opacity-20 text-[#f87171] text-xs rounded-full font-medium">
+                        <span
+                          className="px-2 py-1 text-white text-xs rounded-full font-medium"
+                          style={{
+                            backgroundColor: VIOLATIONS.find(v => v.value === report.violation)?.color + '33', // 20% opacity
+                            border: `1px solid ${VIOLATIONS.find(v => v.value === report.violation)?.color}`
+                          }}
+                        >
                           {VIOLATIONS.find(v => v.value === report.violation)?.emoji} {VIOLATIONS.find(v => v.value === report.violation)?.label}
                         </span>
                         {report.media_count > 0 && (
