@@ -22,8 +22,7 @@ const US_STATES = [
   { code: 'TN', name: 'Tennessee' }, { code: 'TX', name: 'Texas' }, { code: 'UT', name: 'Utah' },
   { code: 'VT', name: 'Vermont' }, { code: 'VA', name: 'Virginia' }, { code: 'WA', name: 'Washington' },
   { code: 'WV', name: 'West Virginia' }, { code: 'WI', name: 'Wisconsin' }, { code: 'WY', name: 'Wyoming' },
-  { code: 'PR', name: 'Puerto Rico' }, { code: 'GU', name: 'Guam' }, { code: 'VI', name: 'Virgin Islands' },
-  { code: 'OTHER', name: 'Other' }
+  { code: 'PR', name: 'Puerto Rico' }, { code: 'GU', name: 'Guam' }, { code: 'VI', name: 'Virgin Islands' }
 ];
 
 const ALL_CITIES = Object.values(citiesData).flat();
@@ -129,7 +128,8 @@ export default function LicensePlateReporter() {
     state: '',
     city: '',
     violation: '',
-    vehicle_type: ''
+    vehicle_type: '',
+    plate: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -284,6 +284,7 @@ export default function LicensePlateReporter() {
     if (filters.city && !report.city.toLowerCase().includes(filters.city.toLowerCase())) return false;
     if (filters.violation && report.violation !== filters.violation) return false;
     if (filters.vehicle_type && report.vehicle_type !== filters.vehicle_type) return false;
+    if (filters.plate && !report.plate.toUpperCase().includes(filters.plate.toUpperCase())) return false;
     return true;
   });
 
@@ -302,8 +303,8 @@ export default function LicensePlateReporter() {
     <div className="min-h-screen bg-[#0b0f14] text-[#e5e7eb]">
       {/* Header */}
       <header className="bg-[#11161c] border-b border-[#1f2733] sticky top-0 z-50 backdrop-blur-sm bg-opacity-95">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-[#60a5fa]">Plate Reporter</h1>
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <img src="/assets/License_Reporter_Logo.webp" alt="License Reporter Logo" className="h-16 w-auto" />
           <nav className="flex gap-2">
             <button
               onClick={() => setView('form')}
@@ -471,13 +472,6 @@ export default function LicensePlateReporter() {
                     </button>
                   ))}
                 </div>
-                {formData.color && (
-                  <div className="mt-4 text-center">
-                    <span className="text-sm text-[#e5e7eb] font-medium">
-                      Selected: {COLORS.find(c => c.value === formData.color)?.label}
-                    </span>
-                  </div>
-                )}
                 {errors.color && <p className="text-[#f87171] text-sm mt-1">{errors.color}</p>}
               </div>
 
@@ -638,7 +632,14 @@ export default function LicensePlateReporter() {
             {/* Filters */}
             <div className="bg-[#11161c] rounded-lg p-6 mb-6">
               <h2 className="text-xl font-semibold mb-4">Filter Reports</h2>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <input
+                  type="text"
+                  value={filters.plate}
+                  onChange={(e) => setFilters(prev => ({ ...prev, plate: e.target.value.toUpperCase() }))}
+                  placeholder="Search Plate Number"
+                  className="bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-2 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa]"
+                />
                 <select
                   value={filters.state}
                   onChange={(e) => setFilters(prev => ({ ...prev, state: e.target.value }))}
