@@ -1,85 +1,41 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Camera, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import citiesData from '../cities.json';
-
-const US_STATES = [
-  { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' }, { code: 'AZ', name: 'Arizona' },
-  { code: 'AR', name: 'Arkansas' }, { code: 'CA', name: 'California' }, { code: 'CO', name: 'Colorado' },
-  { code: 'CT', name: 'Connecticut' }, { code: 'DE', name: 'Delaware' }, { code: 'DC', name: 'District of Columbia' },
-  { code: 'FL', name: 'Florida' }, { code: 'GA', name: 'Georgia' }, { code: 'HI', name: 'Hawaii' },
-  { code: 'ID', name: 'Idaho' }, { code: 'IL', name: 'Illinois' }, { code: 'IN', name: 'Indiana' },
-  { code: 'IA', name: 'Iowa' }, { code: 'KS', name: 'Kansas' }, { code: 'KY', name: 'Kentucky' },
-  { code: 'LA', name: 'Louisiana' }, { code: 'ME', name: 'Maine' }, { code: 'MD', name: 'Maryland' },
-  { code: 'MA', name: 'Massachusetts' }, { code: 'MI', name: 'Michigan' }, { code: 'MN', name: 'Minnesota' },
-  { code: 'MS', name: 'Mississippi' }, { code: 'MO', name: 'Missouri' }, { code: 'MT', name: 'Montana' },
-  { code: 'NE', name: 'Nebraska' }, { code: 'NV', name: 'Nevada' }, { code: 'NH', name: 'New Hampshire' },
-  { code: 'NJ', name: 'New Jersey' }, { code: 'NM', name: 'New Mexico' }, { code: 'NY', name: 'New York' },
-  { code: 'NC', name: 'North Carolina' }, { code: 'ND', name: 'North Dakota' }, { code: 'OH', name: 'Ohio' },
-  { code: 'OK', name: 'Oklahoma' }, { code: 'OR', name: 'Oregon' }, { code: 'PA', name: 'Pennsylvania' },
-  { code: 'RI', name: 'Rhode Island' }, { code: 'SC', name: 'South Carolina' }, { code: 'SD', name: 'South Dakota' },
-  { code: 'TN', name: 'Tennessee' }, { code: 'TX', name: 'Texas' }, { code: 'UT', name: 'Utah' },
-  { code: 'VT', name: 'Vermont' }, { code: 'VA', name: 'Virginia' }, { code: 'WA', name: 'Washington' },
-  { code: 'WV', name: 'West Virginia' }, { code: 'WI', name: 'Wisconsin' }, { code: 'WY', name: 'Wyoming' },
-  { code: 'PR', name: 'Puerto Rico' }, { code: 'GU', name: 'Guam' }, { code: 'VI', name: 'Virgin Islands' }
-];
+import { US_STATES, VIOLATIONS, VEHICLE_TYPES, COLORS, GENDERS, MAKES, StateCode, ViolationType, VehicleType, ColorType, GenderType } from '../lib/constants';
+import { z } from 'zod';
 
 const ALL_CITIES = Object.values(citiesData).flat();
 
-const VIOLATIONS = [
-  { value: 'speeding', label: 'Speeding', emoji: '💨', color: '#f59e0b' }, // orange
-  { value: 'reckless driving', label: 'Reckless Driving', emoji: '⚠️', color: '#dc2626' }, // red
-  { value: 'texting / phone use', label: 'Texting / Phone Use', emoji: '📱', color: '#8b5cf6' }, // purple
-  { value: 'red light / stop sign', label: 'Red Light / Stop Sign', emoji: '🛑', color: '#ef4444' }, // red
-  { value: 'illegal parking', label: 'Illegal Parking', emoji: '🅿️', color: '#6b7280' }, // gray
-  { value: 'tailgating', label: 'Tailgating', emoji: '🚗', color: '#f97316' }, // orange
-  { value: 'unsafe lane change', label: 'Unsafe Lane Change', emoji: '↔️', color: '#eab308' }, // yellow
-  { value: 'failure to yield', label: 'Failure To Yield', emoji: '⚡', color: '#3b82f6' }, // blue
-  { value: 'hit and run', label: 'Hit And Run', emoji: '💥', color: '#dc2626' }, // red
-  { value: 'suspected dui', label: 'Suspected DUI', emoji: '🍺', color: '#7c3aed' } // violet
-];
-
-const VEHICLE_TYPES = [
-  { value: 'sedan', label: 'Sedan', emoji: '🚗' },
-  { value: 'suv', label: 'SUV', emoji: '🚙' },
-  { value: 'pickup', label: 'Pickup', emoji: '🛻' },
-  { value: 'coupe', label: 'Coupe', emoji: '🚗' },
-  { value: 'hatchback', label: 'Hatchback', emoji: '🚗' },
-  { value: 'van/minivan', label: 'Van/Minivan', emoji: '🚐' },
-  { value: 'motorcycle', label: 'Motorcycle', emoji: '🏍️' },
-  { value: 'commercial truck', label: 'Commercial Truck', emoji: '🚚' },
-  { value: 'bus', label: 'Bus', emoji: '🚌' },
-  { value: 'other', label: 'Other', emoji: '🚘' }
-];
-
-const COLORS = [
-  { value: 'white', label: 'White', hex: '#FFFFFF' },
-  { value: 'black', label: 'Black', hex: '#000000' },
-  { value: 'silver', label: 'Silver', hex: '#C0C0C0' },
-  { value: 'gray', label: 'Gray', hex: '#808080' },
-  { value: 'red', label: 'Red', hex: '#DC2626' },
-  { value: 'blue', label: 'Blue', hex: '#2563EB' },
-  { value: 'green', label: 'Green', hex: '#16A34A' },
-  { value: 'yellow', label: 'Yellow', hex: '#EAB308' },
-  { value: 'orange', label: 'Orange', hex: '#EA580C' },
-  { value: 'brown', label: 'Brown', hex: '#92400E' },
-  { value: 'tan', label: 'Tan', hex: '#D2B48C' },
-  { value: 'gold', label: 'Gold', hex: '#FFD700' },
-  { value: 'other', label: 'Other', hex: '#6B7280' }
-];
-
-const GENDERS = [
-  { value: 'female', label: 'Female', emoji: '👩' },
-  { value: 'male', label: 'Male', emoji: '👨' },
-  { value: 'unknown', label: 'Unknown', emoji: '❓' }
-];
-
-const MAKES = [
-  'Toyota', 'Honda', 'Ford', 'Chevrolet', 'Nissan', 'BMW', 'Mercedes-Benz',
-  'Audi', 'Kia', 'Hyundai', 'Volkswagen', 'Subaru', 'Tesla', 'Lexus',
-  'Jeep', 'Dodge', 'Ram', 'GMC', 'Mazda', 'Volvo', 'Porsche'
-];
+// Zod schema for form validation
+const reportSchema = z.object({
+  plate: z.string().min(2).max(10),
+  state_code: z.string().min(2).max(2),
+  city: z.string().min(2),
+  violation: z.enum(['speeding', 'reckless driving', 'texting / phone use', 'red light / stop sign', 'illegal parking', 'tailgating', 'unsafe lane change', 'failure to yield', 'hit and run', 'suspected dui']),
+  vehicle_type: z.enum(['sedan', 'suv', 'pickup', 'coupe', 'hatchback', 'van/minivan', 'motorcycle', 'commercial truck', 'bus', 'other']),
+  color: z.enum(['white', 'black', 'silver', 'gray', 'red', 'blue', 'green', 'yellow', 'orange', 'brown', 'tan', 'gold', 'other']),
+  make: z.string().optional(),
+  model: z.string().optional(),
+  year: z.string().optional().refine((val) => !val || (parseInt(val) >= 1900 && parseInt(val) <= new Date().getFullYear()), {
+    message: 'Invalid year'
+  }),
+  gender_observed: z.enum(['female', 'male', 'unknown']).optional(),
+  description: z.string().max(500).optional(),
+  reporter_email: z.string().email().optional().or(z.literal('')),
+  contact_ok: z.boolean()
+}).refine((data) => {
+  // Validate city belongs to state
+  const stateName = US_STATES.find(state => state.code === data.state_code)?.name;
+  if (stateName && stateName in citiesData) {
+    return citiesData[stateName as keyof typeof citiesData].includes(data.city);
+  }
+  return false;
+}, {
+  message: 'Please select a valid city from the list',
+  path: ['city']
+});
 
 interface Report {
   id: string;
@@ -101,20 +57,42 @@ interface Report {
   media_count: number;
 }
 
+// FormData interface with strict unions
+interface FormData {
+  plate: string;
+  state_code: StateCode;
+  city: string;
+  violation: ViolationType;
+  vehicle_type: VehicleType;
+  color: ColorType;
+  make: string;
+  model: string;
+  year: string;
+  gender_observed: GenderType;
+  description: string;
+  reporter_email: string;
+  contact_ok: boolean;
+}
+
 export default function LicensePlateReporter() {
   const [view, setView] = useState('form');
   const [reports, setReports] = useState<Report[]>([]);
-  const [formData, setFormData] = useState({
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const [formData, setFormData] = useState<FormData>({
     plate: '',
-    state_code: '',
+    state_code: '' as StateCode,
     city: '',
-    violation: '',
-    vehicle_type: '',
-    color: '',
+    violation: '' as ViolationType,
+    vehicle_type: '' as VehicleType,
+    color: '' as ColorType,
     make: '',
     model: '',
     year: '',
-    gender_observed: '',
+    gender_observed: '' as GenderType,
     description: '',
     reporter_email: '',
     contact_ok: false
@@ -124,6 +102,10 @@ export default function LicensePlateReporter() {
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [networkError, setNetworkError] = useState<string | null>(null);
+  const [filePreviews, setFilePreviews] = useState<{ file: File; preview: string; duration?: number; size: string; error?: string }[]>([]);
   const [filters, setFilters] = useState({
     state: '',
     city: '',
@@ -131,34 +113,57 @@ export default function LicensePlateReporter() {
     vehicle_type: '',
     plate: ''
   });
-  const [loading, setLoading] = useState(false);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch reports on component mount
   useEffect(() => {
     fetchReports();
   }, []);
 
-  const fetchReports = async (filterParams?: { state: string; city: string; violation: string; vehicle_type: string }) => {
+  const fetchReports = useCallback(async (filterParams?: { state: string; city: string; violation: string; vehicle_type: string; plate: string }, append: boolean = false, cursor?: string | null) => {
+    // Abort previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
+      setLoading(!append);
+      setLoadingMore(append);
+
       const params = new URLSearchParams();
       if (filterParams?.state) params.append('state', filterParams.state);
       if (filterParams?.city) params.append('city', filterParams.city);
       if (filterParams?.violation) params.append('violation', filterParams.violation);
       if (filterParams?.vehicle_type) params.append('vehicle_type', filterParams.vehicle_type);
+      if (filterParams?.plate) params.append('plate', filterParams.plate);
+      if (cursor) params.append('cursor', cursor);
 
-      const response = await fetch(`/api/reports?${params}`);
+      const response = await fetch(`/api/reports?${params}`, {
+        signal: controller.signal
+      });
+
       if (response.ok) {
         const data = await response.json();
-        setReports(data);
+        setReports(prev => append ? [...prev, ...data.reports] : data.reports);
+        setHasMore(data.hasMore);
+        setNextCursor(data.nextCursor);
       }
-    } catch (error) {
-      console.error('Error fetching reports:', error);
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error('Error fetching reports:', error);
+      }
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, []);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
     if (field === 'plate') {
-      value = value.toUpperCase().replace(/\s/g, '').slice(0, 10);
+      value = (value as string).toUpperCase().replace(/\s/g, '').slice(0, 10);
     }
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -167,7 +172,7 @@ export default function LicensePlateReporter() {
 
     // Update city suggestions when state changes or city input changes
     if (field === 'state_code' || field === 'city') {
-      updateCitySuggestions(field === 'state_code' ? value : formData.state_code, field === 'city' ? value : formData.city);
+      updateCitySuggestions(field === 'state_code' ? value as string : formData.state_code, field === 'city' ? value as string : formData.city);
     }
   };
 
@@ -190,103 +195,282 @@ export default function LicensePlateReporter() {
     setCitySuggestions(filteredCities.slice(0, 10)); // Limit to 10 suggestions
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const validFiles = files.filter((file: File) => {
-      const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime'];
-      return validTypes.includes(file.type) && file.size <= 25 * 1024 * 1024;
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  const getVideoDuration = (file: File): Promise<number> => {
+    return new Promise((resolve) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        resolve(video.duration);
+      };
+      video.src = URL.createObjectURL(file);
     });
-    setMediaFiles(prev => [...prev, ...validFiles].slice(0, 5));
+  };
+
+  const stripExifData = async (file: File): Promise<File> => {
+    if (!file.type.startsWith('image/')) return file;
+
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx?.drawImage(img, 0, 0);
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const strippedFile = new File([blob], file.name, { type: file.type });
+            resolve(strippedFile);
+          } else {
+            resolve(file);
+          }
+        }, file.type);
+      };
+
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime'];
+    const maxSize = 25 * 1024 * 1024;
+
+    const processedFiles: File[] = [];
+    const previews: typeof filePreviews = [];
+
+    for (const file of files) {
+      let error: string | undefined;
+
+      if (!validTypes.includes(file.type)) {
+        error = 'Invalid file type';
+      } else if (file.size > maxSize) {
+        error = 'File too large (max 25MB)';
+      } else if (processedFiles.length + mediaFiles.length >= 5) {
+        error = 'Maximum 5 files allowed';
+        break;
+      }
+
+      if (!error) {
+        // Strip EXIF data for images
+        const processedFile = await stripExifData(file);
+        processedFiles.push(processedFile);
+
+        let preview = '';
+        let duration: number | undefined;
+
+        if (file.type.startsWith('image/')) {
+          preview = URL.createObjectURL(processedFile);
+        } else if (file.type.startsWith('video/')) {
+          preview = URL.createObjectURL(processedFile);
+          duration = await getVideoDuration(processedFile);
+        }
+
+        previews.push({
+          file: processedFile,
+          preview,
+          duration,
+          size: formatFileSize(file.size),
+          error
+        });
+      } else {
+        previews.push({
+          file,
+          preview: '',
+          size: formatFileSize(file.size),
+          error
+        });
+      }
+    }
+
+    setMediaFiles(prev => [...prev, ...processedFiles].slice(0, 5));
+    setFilePreviews(prev => [...prev, ...previews].slice(0, 5));
   };
 
   const removeFile = (index: number) => {
     setMediaFiles(prev => prev.filter((_, i) => i !== index));
+    setFilePreviews(prev => {
+      const newPreviews = prev.filter((_, i) => i !== index);
+      // Clean up object URLs
+      prev[index]?.preview && URL.revokeObjectURL(prev[index].preview);
+      return newPreviews;
+    });
   };
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.plate || formData.plate.length < 2 || formData.plate.length > 10) {
-      newErrors.plate = 'Plate must be 2-10 characters';
+    const result = reportSchema.safeParse(formData);
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.issues.forEach((error: z.ZodIssue) => {
+        const field = error.path[0] as string;
+        newErrors[field] = error.message;
+      });
+      setErrors(newErrors);
+      return false;
     }
-    if (!formData.state_code) newErrors.state_code = 'State is required';
-    if (!formData.city || formData.city.length < 2) newErrors.city = 'City is required';
-    else if (formData.state_code) {
-      const stateName = US_STATES.find(state => state.code === formData.state_code)?.name;
-      if (stateName && stateName in citiesData && !citiesData[stateName as keyof typeof citiesData].includes(formData.city)) {
-        newErrors.city = 'Please select a valid city from the list';
-      }
-    }
-    if (!formData.violation) newErrors.violation = 'Violation is required';
-    if (!formData.vehicle_type) newErrors.vehicle_type = 'Vehicle type is required';
-    if (!formData.color) newErrors.color = 'Color is required';
-
-    if (formData.year && (parseInt(formData.year) < 1900 || parseInt(formData.year) > new Date().getFullYear())) {
-      newErrors.year = 'Invalid year';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    const newReport: Report = {
-      id: Date.now().toString(),
-      plate: formData.plate,
-      state_code: formData.state_code,
-      city: formData.city,
-      violation: formData.violation,
-      vehicle_type: formData.vehicle_type,
-      color: formData.color,
-      make: formData.make || undefined,
-      model: formData.model || undefined,
-      year: formData.year ? parseInt(formData.year) : undefined,
-      gender_observed: formData.gender_observed || undefined,
-      description: formData.description || undefined,
-      reporter_email: formData.reporter_email || undefined,
-      contact_ok: formData.contact_ok,
-      incident_at: new Date().toISOString(),
-      created_at: new Date().toISOString(),
-      media_count: mediaFiles.length
-    };
+    setIsUploading(true);
+    setUploadProgress(0);
+    setNetworkError(null);
 
-    setReports(prev => [newReport, ...prev]);
-    
-    // Reset form
-    setFormData({
-      plate: '',
-      state_code: '',
-      city: '',
-      violation: '',
-      vehicle_type: '',
-      color: '',
-      make: '',
-      model: '',
-      year: '',
-      gender_observed: '',
-      description: '',
-      reporter_email: '',
-      contact_ok: false
-    });
-    setMediaFiles([]);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+    try {
+      const formDataToSend = new FormData();
+
+      // Add form fields
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === 'year' && value) {
+          formDataToSend.append(key, parseInt(value as string).toString());
+        } else if (key === 'contact_ok') {
+          formDataToSend.append(key, value ? 'true' : 'false');
+        } else if (value !== '' && value !== undefined) {
+          formDataToSend.append(key, value as string);
+        }
+      });
+
+      // Add media files as media[] array
+      filePreviews.forEach(preview => {
+        if (!preview.error) {
+          formDataToSend.append('media[]', preview.file);
+        }
+      });
+
+      // Use XMLHttpRequest for progress tracking
+      const xhr = new XMLHttpRequest();
+
+      const uploadPromise = new Promise((resolve, reject) => {
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        });
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          reject(new Error('Network error occurred'));
+        });
+
+        xhr.open('POST', '/api/reports');
+        xhr.send(formDataToSend);
+      });
+
+      const response = await uploadPromise as any;
+
+      if (response.errors) {
+        setErrors(response.errors);
+        return;
+      }
+
+      const newReport: Report = {
+        id: Date.now().toString(),
+        plate: formData.plate,
+        state_code: formData.state_code,
+        city: formData.city,
+        violation: formData.violation,
+        vehicle_type: formData.vehicle_type,
+        color: formData.color,
+        make: formData.make || undefined,
+        model: formData.model || undefined,
+        year: formData.year ? parseInt(formData.year) : undefined,
+        gender_observed: formData.gender_observed || undefined,
+        description: formData.description || undefined,
+        reporter_email: formData.reporter_email || undefined,
+        contact_ok: formData.contact_ok,
+        incident_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        media_count: filePreviews.filter(p => !p.error).length
+      };
+
+      setReports(prev => [newReport, ...prev]);
+
+      // Reset form
+      setFormData({
+        plate: '',
+        state_code: '' as StateCode,
+        city: '',
+        violation: '' as ViolationType,
+        vehicle_type: '' as VehicleType,
+        color: '' as ColorType,
+        make: '',
+        model: '',
+        year: '',
+        gender_observed: '' as GenderType,
+        description: '',
+        reporter_email: '',
+        contact_ok: false
+      });
+      setMediaFiles([]);
+      setFilePreviews([]);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (error: any) {
+      console.error('Error submitting report:', error);
+      if (error.message.includes('Network error') || error.message.includes('HTTP')) {
+        setNetworkError(error.message);
+        setTimeout(() => setNetworkError(null), 5000);
+      } else {
+        setErrors({ general: 'Failed to submit report. Please try again.' });
+      }
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
   };
 
-  const filteredReports = reports.filter(report => {
-    if (filters.state && report.state_code !== filters.state) return false;
-    if (filters.city && !report.city.toLowerCase().includes(filters.city.toLowerCase())) return false;
-    if (filters.violation && report.violation !== filters.violation) return false;
-    if (filters.vehicle_type && report.vehicle_type !== filters.vehicle_type) return false;
-    if (filters.plate && !report.plate.toUpperCase().includes(filters.plate.toUpperCase())) return false;
-    return true;
-  });
+  // Debounced filter handler
+  const handleFilterChange = useCallback((newFilters: typeof filters) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    debounceTimeoutRef.current = setTimeout(() => {
+      setFilters(newFilters);
+      fetchReports(newFilters);
+    }, 300);
+  }, [fetchReports]);
+
+  // Load more reports for infinite scroll
+  const loadMoreReports = useCallback(() => {
+    if (hasMore && !loadingMore) {
+      fetchReports(filters, true, nextCursor);
+    }
+  }, [hasMore, loadingMore, filters, nextCursor, fetchReports]);
+
+  const [timeUpdate, setTimeUpdate] = useState(0);
+
+  // Update time-ago every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeUpdate(prev => prev + 1);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const formatTimeAgo = (dateString: string) => {
     const seconds = Math.floor((new Date().getTime() - new Date(dateString).getTime()) / 1000);
@@ -335,6 +519,22 @@ export default function LicensePlateReporter() {
         <div className="fixed top-20 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 animate-[slideIn_0.3s_ease-out]">
           <CheckCircle2 size={20} />
           <span>Report published successfully!</span>
+        </div>
+      )}
+
+      {/* Network Error Toast */}
+      {networkError && (
+        <div className="fixed top-20 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 animate-[slideIn_0.3s_ease-out]">
+          <AlertCircle size={20} />
+          <span>{networkError}</span>
+        </div>
+      )}
+
+      {/* Upload Progress */}
+      {isUploading && (
+        <div className="fixed top-20 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50">
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span>Uploading... {uploadProgress}%</span>
         </div>
       )}
 
@@ -570,21 +770,49 @@ export default function LicensePlateReporter() {
                   accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime"
                   multiple
                   onChange={handleFileChange}
-                  disabled={mediaFiles.length >= 5}
+                  disabled={filePreviews.length >= 5}
                   className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#60a5fa] file:text-white file:cursor-pointer hover:file:bg-[#5394e3] disabled:opacity-50"
                 />
-                {mediaFiles.length > 0 && (
-                  <div className="mt-3 grid grid-cols-3 gap-2">
-                    {mediaFiles.map((file, index) => (
-                      <div key={index} className="relative bg-[#171d24] rounded-lg p-2">
+                {filePreviews.length > 0 && (
+                  <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {filePreviews.map((preview, index) => (
+                      <div key={index} className="relative bg-[#171d24] rounded-lg p-3 border border-[#1f2733]">
                         <button
                           type="button"
                           onClick={() => removeFile(index)}
-                          className="absolute -top-2 -right-2 bg-[#f87171] rounded-full p-1 hover:bg-[#ef4444]"
+                          className="absolute -top-2 -right-2 bg-[#f87171] rounded-full p-1 hover:bg-[#ef4444] z-10"
                         >
                           <X size={14} />
                         </button>
-                        <p className="text-xs text-[#94a3b8] truncate">{file.name}</p>
+                        {preview.preview && !preview.error && (
+                          <div className="mb-2">
+                            {preview.file.type.startsWith('image/') ? (
+                              <img
+                                src={preview.preview}
+                                alt={preview.file.name}
+                                className="w-full h-20 object-cover rounded"
+                              />
+                            ) : (
+                              <video
+                                src={preview.preview}
+                                className="w-full h-20 object-cover rounded"
+                                muted
+                              />
+                            )}
+                          </div>
+                        )}
+                        <div className="space-y-1">
+                          <p className="text-xs text-[#94a3b8] truncate font-medium">{preview.file.name}</p>
+                          <p className="text-xs text-[#60a5fa]">{preview.size}</p>
+                          {preview.duration && (
+                            <p className="text-xs text-[#94a3b8]">
+                              {Math.floor(preview.duration / 60)}:{(preview.duration % 60).toFixed(0).padStart(2, '0')}
+                            </p>
+                          )}
+                          {preview.error && (
+                            <p className="text-xs text-[#f87171]">{preview.error}</p>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -616,9 +844,10 @@ export default function LicensePlateReporter() {
               <div className="pt-4">
                 <button
                   type="submit"
-                  className="w-full bg-[#60a5fa] hover:bg-[#5394e3] text-white font-semibold py-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:ring-offset-2 focus:ring-offset-[#0b0f14]"
+                  disabled={isUploading}
+                  className="w-full bg-[#60a5fa] hover:bg-[#5394e3] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:ring-offset-2 focus:ring-offset-[#0b0f14]"
                 >
-                  Submit Report
+                  {isUploading ? 'Uploading...' : 'Submit Report'}
                 </button>
                 <p className="text-xs text-[#94a3b8] mt-3 text-center">
                   By submitting, you attest this information is accurate to the best of your knowledge.
@@ -636,13 +865,13 @@ export default function LicensePlateReporter() {
                 <input
                   type="text"
                   value={filters.plate}
-                  onChange={(e) => setFilters(prev => ({ ...prev, plate: e.target.value.toUpperCase() }))}
+                  onChange={(e) => handleFilterChange({ ...filters, plate: e.target.value.toUpperCase() })}
                   placeholder="Search Plate Number"
                   className="bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-2 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa]"
                 />
                 <select
                   value={filters.state}
-                  onChange={(e) => setFilters(prev => ({ ...prev, state: e.target.value }))}
+                  onChange={(e) => handleFilterChange({ ...filters, state: e.target.value })}
                   className="bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-2 text-[#e5e7eb] focus:outline-none focus:ring-2 focus:ring-[#60a5fa]"
                 >
                   <option value="">All States</option>
@@ -653,13 +882,13 @@ export default function LicensePlateReporter() {
                 <input
                   type="text"
                   value={filters.city}
-                  onChange={(e) => setFilters(prev => ({ ...prev, city: e.target.value }))}
+                  onChange={(e) => handleFilterChange({ ...filters, city: e.target.value })}
                   placeholder="Filter by city"
                   className="bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-2 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa]"
                 />
                 <select
                   value={filters.violation}
-                  onChange={(e) => setFilters(prev => ({ ...prev, violation: e.target.value }))}
+                  onChange={(e) => handleFilterChange({ ...filters, violation: e.target.value })}
                   className="bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-2 text-[#e5e7eb] focus:outline-none focus:ring-2 focus:ring-[#60a5fa]"
                 >
                   <option value="">All Violations</option>
@@ -671,7 +900,7 @@ export default function LicensePlateReporter() {
                 </select>
                 <select
                   value={filters.vehicle_type}
-                  onChange={(e) => setFilters(prev => ({ ...prev, vehicle_type: e.target.value }))}
+                  onChange={(e) => handleFilterChange({ ...filters, vehicle_type: e.target.value })}
                   className="bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-2 text-[#e5e7eb] focus:outline-none focus:ring-2 focus:ring-[#60a5fa]"
                 >
                   <option value="">All Vehicles</option>
@@ -685,61 +914,74 @@ export default function LicensePlateReporter() {
             </div>
 
             {/* Reports Grid */}
-            {filteredReports.length === 0 ? (
+            {reports.length === 0 && !loading ? (
               <div className="bg-[#11161c] rounded-lg p-12 text-center">
                 <AlertCircle className="mx-auto mb-4 text-[#94a3b8]" size={48} />
                 <p className="text-[#94a3b8]">No reports yet. Be the first to submit one!</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredReports.map(report => (
-                  <div key={report.id} className="bg-[#11161c] rounded-lg p-5 border border-[#1f2733] hover:border-[#60a5fa] transition-colors">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="text-xl font-bold text-[#60a5fa]">{report.plate}</h3>
-                        <p className="text-sm text-[#94a3b8]">{report.state_code} • {report.city}</p>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {reports.map((report: Report) => (
+                    <div key={report.id} className="bg-[#11161c] rounded-lg p-5 border border-[#1f2733] hover:border-[#60a5fa] transition-colors">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="text-xl font-bold text-[#60a5fa]">{report.plate}</h3>
+                          <p className="text-sm text-[#94a3b8]">{report.state_code} • {report.city}</p>
+                        </div>
+                        <span className="text-xs text-[#94a3b8]">{formatTimeAgo(report.created_at)}</span>
                       </div>
-                      <span className="text-xs text-[#94a3b8]">{formatTimeAgo(report.created_at)}</span>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="px-2 py-1 text-white text-xs rounded-full font-medium"
-                          style={{
-                            backgroundColor: VIOLATIONS.find(v => v.value === report.violation)?.color + '33', // 20% opacity
-                            border: `1px solid ${VIOLATIONS.find(v => v.value === report.violation)?.color}`
-                          }}
-                        >
-                          {VIOLATIONS.find(v => v.value === report.violation)?.emoji} {VIOLATIONS.find(v => v.value === report.violation)?.label}
-                        </span>
-                        {report.media_count > 0 && (
-                          <span className="flex items-center gap-1 text-xs text-[#94a3b8]">
-                            <Camera size={14} />
-                            {report.media_count}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="px-2 py-1 text-white text-xs rounded-full font-medium"
+                            style={{
+                              backgroundColor: VIOLATIONS.find(v => v.value === report.violation)?.color + '33', // 20% opacity
+                              border: `1px solid ${VIOLATIONS.find(v => v.value === report.violation)?.color}`
+                            }}
+                          >
+                            {VIOLATIONS.find(v => v.value === report.violation)?.emoji} {VIOLATIONS.find(v => v.value === report.violation)?.label}
                           </span>
+                          {report.media_count > 0 && (
+                            <span className="flex items-center gap-1 text-xs text-[#94a3b8]">
+                              <Camera size={14} />
+                              {report.media_count}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-sm flex items-center gap-2">
+                          <span className="text-[#94a3b8]">Vehicle:</span>
+                          <div
+                            className="w-4 h-4 rounded-full border border-[#1f2733]"
+                            style={{ backgroundColor: COLORS.find(c => c.value === report.color)?.hex }}
+                          />
+                          <span className="text-[#e5e7eb]">
+                            {COLORS.find(c => c.value === report.color)?.label} {report.make && `${report.make} `}
+                            {VEHICLE_TYPES.find(v => v.value === report.vehicle_type)?.label}
+                            {report.year && ` (${report.year})`}
+                          </span>
+                        </div>
+                        {report.description && (
+                          <p className="text-sm text-[#94a3b8] line-clamp-2">
+                            {report.description}
+                          </p>
                         )}
                       </div>
-                      <div className="text-sm flex items-center gap-2">
-                        <span className="text-[#94a3b8]">Vehicle:</span>
-                        <div 
-                          className="w-4 h-4 rounded-full border border-[#1f2733]"
-                          style={{ backgroundColor: COLORS.find(c => c.value === report.color)?.hex }}
-                        />
-                        <span className="text-[#e5e7eb]">
-                          {COLORS.find(c => c.value === report.color)?.label} {report.make && `${report.make} `}
-                          {VEHICLE_TYPES.find(v => v.value === report.vehicle_type)?.label}
-                          {report.year && ` (${report.year})`}
-                        </span>
-                      </div>
-                      {report.description && (
-                        <p className="text-sm text-[#94a3b8] line-clamp-2">
-                          {report.description}
-                        </p>
-                      )}
                     </div>
+                  ))}
+                </div>
+                {hasMore && (
+                  <div className="text-center mt-8">
+                    <button
+                      onClick={loadMoreReports}
+                      disabled={loadingMore}
+                      className="bg-[#60a5fa] hover:bg-[#5394e3] disabled:opacity-50 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                    >
+                      {loadingMore ? 'Loading...' : 'Load More Reports'}
+                    </button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </div>
         )}

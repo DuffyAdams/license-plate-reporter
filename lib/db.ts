@@ -48,5 +48,7 @@ export const getReportsByFilters = db.prepare(`
     AND (? IS NULL OR city LIKE ?)
     AND (? IS NULL OR violation = ?)
     AND (? IS NULL OR vehicle_type = ?)
+    AND (? IS NULL OR plate LIKE ?)
   ORDER BY created_at DESC
+  LIMIT ? OFFSET ?
 `);
