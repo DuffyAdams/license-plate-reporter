@@ -113,7 +113,6 @@ export default function LicensePlateReporter() {
     vehicle_type: '',
     plate: ''
   });
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch reports on component mount
   useEffect(() => {
@@ -443,16 +442,10 @@ export default function LicensePlateReporter() {
     }
   };
 
-  // Debounced filter handler
+  // Filter handler
   const handleFilterChange = useCallback((newFilters: typeof filters) => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-
-    debounceTimeoutRef.current = setTimeout(() => {
-      setFilters(newFilters);
-      fetchReports(newFilters);
-    }, 300);
+    setFilters(newFilters);
+    fetchReports(newFilters);
   }, [fetchReports]);
 
   // Load more reports for infinite scroll
