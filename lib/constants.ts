@@ -63,8 +63,7 @@ export const COLORS = [
 
 export const GENDERS = [
   { value: 'female', label: 'Female', emoji: '👩' },
-  { value: 'male', label: 'Male', emoji: '👨' },
-  { value: 'unknown', label: 'Unknown', emoji: '❓' }
+  { value: 'male', label: 'Male', emoji: '👨' }
 ];
 
 export const MAKES = [

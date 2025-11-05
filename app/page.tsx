@@ -21,7 +21,7 @@ const reportSchema = z.object({
   year: z.string().optional().refine((val) => !val || (parseInt(val) >= 1900 && parseInt(val) <= new Date().getFullYear()), {
     message: 'Invalid year'
   }),
-  gender_observed: z.enum(['female', 'male', 'unknown']).optional(),
+  gender_observed: z.enum(['female', 'male', '']).optional(),
   description: z.string().max(500).optional(),
   reporter_email: z.string().email().optional().or(z.literal('')),
   contact_ok: z.boolean()
@@ -68,7 +68,7 @@ interface FormData {
   make: string;
   model: string;
   year: string;
-  gender_observed: GenderType;
+  gender_observed: GenderType | '';
   description: string;
   reporter_email: string;
   contact_ok: boolean;
@@ -92,7 +92,7 @@ export default function LicensePlateReporter() {
     make: '',
     model: '',
     year: '',
-    gender_observed: '' as GenderType,
+    gender_observed: '',
     description: '',
     reporter_email: '',
     contact_ok: false
@@ -419,7 +419,7 @@ export default function LicensePlateReporter() {
         make: '',
         model: '',
         year: '',
-        gender_observed: '' as GenderType,
+        gender_observed: '',
         description: '',
         reporter_email: '',
         contact_ok: false
@@ -733,6 +733,17 @@ export default function LicensePlateReporter() {
                       <span className="ml-2 text-sm">{gender.emoji} {gender.label}</span>
                     </label>
                   ))}
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value=""
+                      checked={formData.gender_observed === ''}
+                      onChange={(e) => handleInputChange('gender_observed', e.target.value)}
+                      className="w-4 h-4 text-[#60a5fa] bg-[#171d24] border-[#1f2733] focus:ring-[#60a5fa] focus:ring-2"
+                    />
+                    <span className="ml-2 text-sm">🚫 Not specified</span>
+                  </label>
                 </div>
               </div>
 
