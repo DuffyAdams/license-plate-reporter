@@ -1013,12 +1013,24 @@ export default function LicensePlateReporter() {
                   {reports.map((report: Report) => (
                     <div key={report.id} className="bg-[#11161c] rounded-lg p-5 border border-[#1f2733] hover:border-[#60a5fa] transition-colors">
                       <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="text-xl font-bold text-[#60a5fa]">{report.plate}</h3>
-                          <p className="text-sm text-[#94a3b8]">{report.state_code} • {report.city}</p>
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold text-[#60a5fa] mb-2">{report.plate}</h3>
+                          <p className="text-sm text-[#94a3b8] mb-3">{report.state_code} • {report.city}</p>
                         </div>
                         <span className="text-xs text-[#94a3b8]">{formatTimeAgo(report.created_at)}</span>
                       </div>
+
+                      {report.latitude && report.longitude && (
+                        <div className="mb-3">
+                          <div className="w-full h-32 bg-[#1f2733] rounded border border-[#2a3441] overflow-hidden">
+                            <MapComponent
+                              onLocationSelect={() => {}}
+                              selectedLocation={{ lat: report.latitude!, lng: report.longitude! }}
+                              isThumbnail={true}
+                            />
+                          </div>
+                        </div>
+                      )}
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <span

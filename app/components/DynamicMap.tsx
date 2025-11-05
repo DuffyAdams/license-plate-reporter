@@ -18,9 +18,10 @@ L.Icon.Default.mergeOptions({
 interface DynamicMapProps {
   onLocationSelect: (lat: number, lng: number) => void;
   selectedLocation?: { lat: number; lng: number } | null;
+  isThumbnail?: boolean;
 }
 
-function LocationMarker({ onLocationSelect, selectedLocation }: DynamicMapProps) {
+function LocationMarker({ onLocationSelect, selectedLocation, isThumbnail }: DynamicMapProps) {
   const [position, setPosition] = useState<L.LatLng | null>(null);
 
   useEffect(() => {
@@ -31,8 +32,10 @@ function LocationMarker({ onLocationSelect, selectedLocation }: DynamicMapProps)
 
   const map = useMapEvents({
     click(e: L.LeafletMouseEvent) {
-      setPosition(e.latlng);
-      onLocationSelect(e.latlng.lat, e.latlng.lng);
+      if (!isThumbnail) {
+        setPosition(e.latlng);
+        onLocationSelect(e.latlng.lat, e.latlng.lng);
+      }
     },
   });
 
@@ -43,24 +46,28 @@ function LocationMarker({ onLocationSelect, selectedLocation }: DynamicMapProps)
   );
 }
 
-export default function DynamicMap({ onLocationSelect, selectedLocation }: DynamicMapProps) {
+export default function DynamicMap({ onLocationSelect, selectedLocation, isThumbnail }: DynamicMapProps) {
   // Default center (somewhere in the US)
   const defaultCenter: [number, number] = [39.8283, -98.5795];
 
   return (
     <MapContainer
       center={selectedLocation ? [selectedLocation.lat, selectedLocation.lng] : defaultCenter}
-      zoom={selectedLocation ? 15 : 4}
-      style={{ height: '256px', width: '100%' }}
-      className="rounded-lg"
+      zoom={selectedLocation ? (isThumbnail ? 14 : 15) : 4}
+      style={{ height: '100%', width: '100%' }}
+      className={isThumbnail ? "rounded" : "rounded-lg"}
       zoomControl={true}
+      dragging={true}
+      scrollWheelZoom={true}
+      doubleClickZoom={true}
+      attributionControl={false}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        maxZoom={18}
+        attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png"
+        maxZoom={20}
       />
-      <LocationMarker onLocationSelect={onLocationSelect} selectedLocation={selectedLocation} />
+      <LocationMarker onLocationSelect={onLocationSelect} selectedLocation={selectedLocation} isThumbnail={isThumbnail} />
     </MapContainer>
   );
 }
