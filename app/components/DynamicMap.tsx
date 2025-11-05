@@ -54,7 +54,7 @@ export default function DynamicMap({ onLocationSelect, selectedLocation, isThumb
     <MapContainer
       center={selectedLocation ? [selectedLocation.lat, selectedLocation.lng] : defaultCenter}
       zoom={selectedLocation ? (isThumbnail ? 14 : 15) : 4}
-      style={{ height: '100%', width: '100%' }}
+      style={{ height: '100%', width: '100%', position: 'relative', zIndex: 40 }}
       className={isThumbnail ? "rounded" : "rounded-lg"}
       zoomControl={true}
       dragging={true}
