@@ -40,7 +40,7 @@ function GetCurrentLocation({ onLocationSelect }: { onLocationSelect: (lat: numb
     <button
       onClick={getCurrentLocation}
       disabled={gettingLocation}
-      className="bg-[#60a5fa] hover:bg-[#5394e3] disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+      className="bg-[#d76144] hover:bg-[#b45037] disabled:opacity-50 text-[#dfceb9] px-4 py-2 rounded-lg text-sm font-medium transition-colors"
       type="button"
     >
       {gettingLocation ? 'Getting Location...' : '📍 Use My Location'}
@@ -538,18 +538,18 @@ export default function LicensePlateReporter() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f14] text-[#e5e7eb]">
+    <div className="min-h-screen bg-[#dfceb9] text-[#0c4648]">
       {/* Header */}
-      <header className="bg-[#11161c] border-b border-[#1f2733] sticky top-0 z-50 backdrop-blur-sm bg-opacity-95">
+      <header className="bg-[#3b6061] border-b border-[#0c4648] sticky top-0 z-50 backdrop-blur-sm bg-opacity-95">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <img src="/assets/License_Reporter_Logo.webp" alt="License Reporter Logo" className="h-16 w-auto" />
           <nav className="flex gap-2">
             <button
               onClick={() => setView('form')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                view === 'form' 
-                  ? 'bg-[#60a5fa] text-white' 
-                  : 'bg-[#171d24] text-[#94a3b8] hover:bg-[#1f2733]'
+                view === 'form'
+                  ? 'bg-[#d76144] text-white'
+                  : 'bg-[#eba796] text-[#0c4648] hover:bg-[#3b6061]'
               }`}
             >
               Report
@@ -557,9 +557,9 @@ export default function LicensePlateReporter() {
             <button
               onClick={() => setView('feed')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                view === 'feed' 
-                  ? 'bg-[#60a5fa] text-white' 
-                  : 'bg-[#171d24] text-[#94a3b8] hover:bg-[#1f2733]'
+                view === 'feed'
+                  ? 'bg-[#d76144] text-white'
+                  : 'bg-[#eba796] text-[#0c4648] hover:bg-[#3b6061]'
               }`}
             >
               Feed ({reports.length})
@@ -570,7 +570,7 @@ export default function LicensePlateReporter() {
 
       {/* Success Toast */}
       {showSuccess && (
-        <div className="fixed top-20 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 animate-[slideIn_0.3s_ease-out]">
+        <div className="fixed top-20 right-4 bg-[#3b6061] text-[#dfceb9] px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 animate-[slideIn_0.3s_ease-out]">
           <CheckCircle2 size={20} />
           <span>Report published successfully!</span>
         </div>
@@ -578,7 +578,7 @@ export default function LicensePlateReporter() {
 
       {/* Network Error Toast */}
       {networkError && (
-        <div className="fixed top-20 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 animate-[slideIn_0.3s_ease-out]">
+        <div className="fixed top-20 right-4 bg-[#d76144] text-[#dfceb9] px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 animate-[slideIn_0.3s_ease-out]">
           <AlertCircle size={20} />
           <span>{networkError}</span>
         </div>
@@ -586,7 +586,7 @@ export default function LicensePlateReporter() {
 
       {/* Upload Progress */}
       {isUploading && (
-        <div className="fixed top-20 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50">
+        <div className="fixed top-20 right-4 bg-[#0c4648] text-[#dfceb9] px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50">
           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           <span>Uploading... {uploadProgress}%</span>
         </div>
@@ -596,7 +596,7 @@ export default function LicensePlateReporter() {
       <main className="max-w-6xl mx-auto px-4 py-8">
         {view === 'form' ? (
           <div className="max-w-2xl mx-auto">
-            <div className="bg-[#11161c] rounded-lg p-6 mb-6">
+            <div className="bg-[#3b6061] rounded-lg p-6 mb-6">
               <h2 className="text-xl font-semibold mb-2">Submit a Report</h2>
               <p className="text-[#94a3b8] text-sm">
                 Help keep our roads safe by reporting traffic violations. All reports are public.
@@ -614,7 +614,7 @@ export default function LicensePlateReporter() {
                   value={formData.plate}
                   onChange={(e) => handleInputChange('plate', e.target.value)}
                   placeholder="ABC1234"
-                  className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:border-transparent"
+                  className="w-full bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-3 text-[#0c4648] placeholder-[#3b6061] focus:outline-none focus:ring-2 focus:ring-[#d76144] focus:border-transparent"
                 />
                 <p className="text-xs text-[#94a3b8] mt-1">Enter without spaces</p>
                 {errors.plate && <p className="text-[#f87171] text-sm mt-1">{errors.plate}</p>}
@@ -628,7 +628,7 @@ export default function LicensePlateReporter() {
                 <select
                   value={formData.state_code}
                   onChange={(e) => handleInputChange('state_code', e.target.value)}
-                  className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:border-transparent"
+                  className="w-full bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-3 text-[#0c4648] focus:outline-none focus:ring-2 focus:ring-[#d76144] focus:border-transparent"
                 >
                   <option value="">Select a State</option>
                   {US_STATES.map(state => (
@@ -650,7 +650,7 @@ export default function LicensePlateReporter() {
                     onChange={(e) => handleInputChange('city', e.target.value)}
                     placeholder="San Diego"
                     list="city-suggestions"
-                    className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:border-transparent"
+                    className="w-full bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-3 text-[#0c4648] placeholder-[#3b6061] focus:outline-none focus:ring-2 focus:ring-[#d76144] focus:border-transparent"
                   />
                   <datalist id="city-suggestions">
                     {citySuggestions.map(city => (
@@ -669,7 +669,7 @@ export default function LicensePlateReporter() {
                 <select
                   value={formData.violation}
                   onChange={(e) => handleInputChange('violation', e.target.value)}
-                  className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:border-transparent"
+                  className="w-full bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-3 text-[#0c4648] focus:outline-none focus:ring-2 focus:ring-[#d76144] focus:border-transparent"
                 >
                   <option value="">Select a Violation</option>
                   {VIOLATIONS.map(violation => (
@@ -689,7 +689,7 @@ export default function LicensePlateReporter() {
                 <select
                   value={formData.vehicle_type}
                   onChange={(e) => handleInputChange('vehicle_type', e.target.value)}
-                  className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:border-transparent"
+                  className="w-full bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-3 text-[#0c4648] focus:outline-none focus:ring-2 focus:ring-[#d76144] focus:border-transparent"
                 >
                   <option value="">Select a Vehicle</option>
                   {VEHICLE_TYPES.map(type => (
@@ -717,9 +717,9 @@ export default function LicensePlateReporter() {
                     >
                       <div 
                         className={`w-14 h-14 md:w-12 md:h-12 rounded-full transition-all ${
-                          formData.color === color.value 
-                            ? 'ring-4 ring-[#60a5fa] ring-offset-2 ring-offset-[#11161c] scale-110' 
-                            : 'border-2 border-[#1f2733] hover:scale-105'
+                          formData.color === color.value
+                            ? 'ring-4 ring-[#d76144] ring-offset-2 ring-offset-[#3b6061] scale-110'
+                            : 'border-2 border-[#0c4648] hover:scale-105'
                         }`}
                         style={{ backgroundColor: color.hex }}
                       />
@@ -730,7 +730,7 @@ export default function LicensePlateReporter() {
               </div>
 
               {/* Optional Fields Divider */}
-              <div className="border-t border-[#1f2733] pt-5">
+              <div className="border-t border-[#0c4648] pt-5">
                 <p className="text-sm text-[#94a3b8] mb-4">Optional Information</p>
               </div>
 
@@ -743,7 +743,7 @@ export default function LicensePlateReporter() {
                   onChange={(e) => handleInputChange('make', e.target.value)}
                   placeholder="Toyota"
                   list="makes-list"
-                  className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:border-transparent"
+                  className="w-full bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-3 text-[#0c4648] placeholder-[#3b6061] focus:outline-none focus:ring-2 focus:ring-[#d76144] focus:border-transparent"
                 />
                 <datalist id="makes-list">
                   {MAKES.map(make => <option key={make} value={make} />)}
@@ -758,7 +758,7 @@ export default function LicensePlateReporter() {
                   value={formData.model}
                   onChange={(e) => handleInputChange('model', e.target.value)}
                   placeholder="Leave blank if unknown"
-                  className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:border-transparent"
+                  className="w-full bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-3 text-[#0c4648] placeholder-[#3b6061] focus:outline-none focus:ring-2 focus:ring-[#d76144] focus:border-transparent"
                 />
               </div>
 
@@ -772,7 +772,7 @@ export default function LicensePlateReporter() {
                   placeholder="2020"
                   min="1900"
                   max={new Date().getFullYear()}
-                  className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:border-transparent"
+                  className="w-full bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-3 text-[#0c4648] placeholder-[#3b6061] focus:outline-none focus:ring-2 focus:ring-[#d76144] focus:border-transparent"
                 />
                 {errors.year && <p className="text-[#f87171] text-sm mt-1">{errors.year}</p>}
               </div>
@@ -789,7 +789,7 @@ export default function LicensePlateReporter() {
                         value={gender.value}
                         checked={formData.gender_observed === gender.value}
                         onChange={(e) => handleInputChange('gender_observed', e.target.value)}
-                        className="w-4 h-4 text-[#60a5fa] bg-[#171d24] border-[#1f2733] focus:ring-[#60a5fa] focus:ring-2"
+                        className="w-4 h-4 text-[#d76144] bg-[#eba796] border-[#0c4648] focus:ring-[#d76144] focus:ring-2"
                       />
                       <span className="ml-2 text-sm">{gender.emoji} {gender.label}</span>
                     </label>
@@ -801,7 +801,7 @@ export default function LicensePlateReporter() {
                       value=""
                       checked={formData.gender_observed === ''}
                       onChange={(e) => handleInputChange('gender_observed', e.target.value)}
-                      className="w-4 h-4 text-[#60a5fa] bg-[#171d24] border-[#1f2733] focus:ring-[#60a5fa] focus:ring-2"
+                      className="w-4 h-4 text-[#d76144] bg-[#eba796] border-[#0c4648] focus:ring-[#d76144] focus:ring-2"
                     />
                     <span className="ml-2 text-sm">🚫 Not specified</span>
                   </label>
@@ -817,7 +817,7 @@ export default function LicensePlateReporter() {
                   placeholder="Additional details about the incident..."
                   maxLength={500}
                   rows={4}
-                  className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:border-transparent resize-none"
+                  className="w-full bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-3 text-[#0c4648] placeholder-[#3b6061] focus:outline-none focus:ring-2 focus:ring-[#d76144] focus:border-transparent resize-none"
                 />
                 <p className="text-xs text-[#94a3b8] mt-1 text-right">
                   {formData.description.length}/500 characters
@@ -841,7 +841,7 @@ export default function LicensePlateReporter() {
                   selectedLocation={selectedLocation}
                 />
                 {selectedLocation && (
-                  <p className="text-xs text-[#60a5fa] mt-2">
+                  <p className="text-xs text-[#d76144] mt-2">
                     Location selected: {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
                   </p>
                 )}
@@ -859,12 +859,12 @@ export default function LicensePlateReporter() {
                   multiple
                   onChange={handleFileChange}
                   disabled={filePreviews.length >= 5}
-                  className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#60a5fa] file:text-white file:cursor-pointer hover:file:bg-[#5394e3] disabled:opacity-50"
+                  className="w-full bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-3 text-[#0c4648] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#d76144] file:text-[#dfceb9] file:cursor-pointer hover:file:bg-[#b45037] disabled:opacity-50"
                 />
                 {filePreviews.length > 0 && (
                   <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-3">
                     {filePreviews.map((preview, index) => (
-                      <div key={index} className="relative bg-[#171d24] rounded-lg p-3 border border-[#1f2733]">
+                      <div key={index} className="relative bg-[#eba796] rounded-lg p-3 border border-[#0c4648]">
                         <button
                           type="button"
                           onClick={() => removeFile(index)}
@@ -891,7 +891,7 @@ export default function LicensePlateReporter() {
                         )}
                         <div className="space-y-1">
                           <p className="text-xs text-[#94a3b8] truncate font-medium">{preview.file.name}</p>
-                          <p className="text-xs text-[#60a5fa]">{preview.size}</p>
+                          <p className="text-xs text-[#d76144]">{preview.size}</p>
                           {preview.duration && (
                             <p className="text-xs text-[#94a3b8]">
                               {Math.floor(preview.duration / 60)}:{(preview.duration % 60).toFixed(0).padStart(2, '0')}
@@ -915,14 +915,14 @@ export default function LicensePlateReporter() {
                   value={formData.reporter_email}
                   onChange={(e) => handleInputChange('reporter_email', e.target.value)}
                   placeholder="your@email.com"
-                  className="w-full bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-3 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:border-transparent"
+                  className="w-full bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-3 text-[#0c4648] placeholder-[#3b6061] focus:outline-none focus:ring-2 focus:ring-[#d76144] focus:border-transparent"
                 />
                 <label className="flex items-center mt-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.contact_ok}
                     onChange={(e) => handleInputChange('contact_ok', e.target.checked)}
-                    className="w-4 h-4 text-[#60a5fa] bg-[#171d24] border-[#1f2733] rounded focus:ring-[#60a5fa] focus:ring-2"
+                    className="w-4 h-4 text-[#d76144] bg-[#eba796] border-[#0c4648] rounded focus:ring-[#d76144] focus:ring-2"
                   />
                   <span className="ml-2 text-sm text-[#94a3b8]">Admin can contact me about this report</span>
                 </label>
@@ -933,7 +933,7 @@ export default function LicensePlateReporter() {
                 <button
                   type="submit"
                   disabled={isUploading}
-                  className="w-full bg-[#60a5fa] hover:bg-[#5394e3] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:ring-offset-2 focus:ring-offset-[#0b0f14]"
+                  className="w-full bg-[#d76144] hover:bg-[#b45037] disabled:opacity-50 disabled:cursor-not-allowed text-[#dfceb9] font-semibold py-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#d76144] focus:ring-offset-2 focus:ring-offset-[#dfceb9]"
                 >
                   {isUploading ? 'Uploading...' : 'Submit Report'}
                 </button>
@@ -947,7 +947,7 @@ export default function LicensePlateReporter() {
         ) : (
           <div>
             {/* Filters */}
-            <div className="bg-[#11161c] rounded-lg p-6 mb-6">
+            <div className="bg-[#3b6061] rounded-lg p-6 mb-6">
               <h2 className="text-xl font-semibold mb-4">Filter Reports</h2>
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <input
@@ -955,12 +955,12 @@ export default function LicensePlateReporter() {
                   value={filters.plate}
                   onChange={(e) => handleFilterChange({ ...filters, plate: e.target.value.toUpperCase() })}
                   placeholder="Search Plate Number"
-                  className="bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-2 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa]"
+                  className="bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-2 text-[#0c4648] placeholder-[#3b6061] focus:outline-none focus:ring-2 focus:ring-[#d76144]"
                 />
                 <select
                   value={filters.state}
                   onChange={(e) => handleFilterChange({ ...filters, state: e.target.value })}
-                  className="bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-2 text-[#e5e7eb] focus:outline-none focus:ring-2 focus:ring-[#60a5fa]"
+                  className="bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-2 text-[#0c4648] focus:outline-none focus:ring-2 focus:ring-[#d76144]"
                 >
                   <option value="">All States</option>
                   {US_STATES.map(state => (
@@ -972,12 +972,12 @@ export default function LicensePlateReporter() {
                   value={filters.city}
                   onChange={(e) => handleFilterChange({ ...filters, city: e.target.value })}
                   placeholder="Filter by city"
-                  className="bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-2 text-[#e5e7eb] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#60a5fa]"
+                  className="bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-2 text-[#0c4648] placeholder-[#3b6061] focus:outline-none focus:ring-2 focus:ring-[#d76144]"
                 />
                 <select
                   value={filters.violation}
                   onChange={(e) => handleFilterChange({ ...filters, violation: e.target.value })}
-                  className="bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-2 text-[#e5e7eb] focus:outline-none focus:ring-2 focus:ring-[#60a5fa]"
+                  className="bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-2 text-[#0c4648] focus:outline-none focus:ring-2 focus:ring-[#d76144]"
                 >
                   <option value="">All Violations</option>
                   {VIOLATIONS.map(violation => (
@@ -989,7 +989,7 @@ export default function LicensePlateReporter() {
                 <select
                   value={filters.vehicle_type}
                   onChange={(e) => handleFilterChange({ ...filters, vehicle_type: e.target.value })}
-                  className="bg-[#171d24] border border-[#1f2733] rounded-lg px-4 py-2 text-[#e5e7eb] focus:outline-none focus:ring-2 focus:ring-[#60a5fa]"
+                  className="bg-[#eba796] border border-[#0c4648] rounded-lg px-4 py-2 text-[#0c4648] focus:outline-none focus:ring-2 focus:ring-[#d76144]"
                 >
                   <option value="">All Vehicles</option>
                   {VEHICLE_TYPES.map(type => (
@@ -1003,7 +1003,7 @@ export default function LicensePlateReporter() {
 
             {/* Reports Grid */}
             {reports.length === 0 && !loading ? (
-              <div className="bg-[#11161c] rounded-lg p-12 text-center">
+              <div className="bg-[#3b6061] rounded-lg p-12 text-center">
                 <AlertCircle className="mx-auto mb-4 text-[#94a3b8]" size={48} />
                 <p className="text-[#94a3b8]">No reports yet. Be the first to submit one!</p>
               </div>
@@ -1011,10 +1011,10 @@ export default function LicensePlateReporter() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {reports.map((report: Report) => (
-                    <div key={report.id} className="bg-[#11161c] rounded-lg p-5 border border-[#1f2733] hover:border-[#60a5fa] transition-colors">
+                    <div key={report.id} className="bg-[#3b6061] rounded-lg p-5 border border-[#0c4648] hover:ring-2 hover:ring-[#d76144] transition-colors">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
-                          <h3 className="text-xl font-bold text-[#60a5fa] mb-2">{report.plate}</h3>
+                          <h3 className="text-xl font-bold text-[#d76144] mb-2">{report.plate}</h3>
                           <p className="text-sm text-[#94a3b8]">{report.state_code} • {report.city}</p>
                         </div>
                         <span className="text-xs text-[#94a3b8]">{formatTimeAgo(report.created_at)}</span>
@@ -1022,7 +1022,7 @@ export default function LicensePlateReporter() {
 
                       {report.latitude && report.longitude && (
                         <div className="mb-3">
-                          <div className="w-full h-32 bg-[#1f2733] rounded border border-[#2a3441] overflow-hidden">
+                          <div className="w-full h-32 bg-[#0c4648] rounded border border-[#3b6061] overflow-hidden">
                             <MapComponent
                               onLocationSelect={() => {}}
                               selectedLocation={{ lat: report.latitude!, lng: report.longitude! }}
@@ -1052,7 +1052,7 @@ export default function LicensePlateReporter() {
                         <div className="text-sm flex items-center gap-2">
                           <span className="text-[#94a3b8]">Vehicle:</span>
                           <div
-                            className="w-4 h-4 rounded-full border border-[#1f2733]"
+                            className="w-4 h-4 rounded-full border border-[#0c4648]"
                             style={{ backgroundColor: COLORS.find(c => c.value === report.color)?.hex }}
                           />
                           <span className="text-[#e5e7eb]">
@@ -1075,7 +1075,7 @@ export default function LicensePlateReporter() {
                     <button
                       onClick={loadMoreReports}
                       disabled={loadingMore}
-                      className="bg-[#60a5fa] hover:bg-[#5394e3] disabled:opacity-50 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                      className="bg-[#d76144] hover:bg-[#b45037] disabled:opacity-50 text-[#dfceb9] font-semibold py-3 px-6 rounded-lg transition-colors"
                     >
                       {loadingMore ? 'Loading...' : 'Load More Reports'}
                     </button>
@@ -1088,7 +1088,7 @@ export default function LicensePlateReporter() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-[#11161c] border-t border-[#1f2733] mt-12">
+      <footer className="bg-[#3b6061] border-t border-[#0c4648] mt-12">
         <div className="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-[#94a3b8]">
           <p>Plate Reporter • Community-driven traffic safety reporting</p>
           <p className="mt-1">This is for community reporting only, not law enforcement.</p>
