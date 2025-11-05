@@ -7,12 +7,14 @@ import L from 'leaflet';
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css';
 
-// Fix for default markers in react-leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+// Custom marker icon
+const customIcon = new L.Icon({
+  iconUrl: '/assets/marker.png',
+  iconSize: [35, 35],
+  iconAnchor: [12, 35],
+  popupAnchor: [1, -34],
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  shadowSize: [41, 41]
 });
 
 interface DynamicMapProps {
@@ -40,7 +42,7 @@ function LocationMarker({ onLocationSelect, selectedLocation, isThumbnail }: Dyn
   });
 
   return position === null ? null : (
-    <Marker position={position}>
+    <Marker position={position} icon={customIcon}>
       <Popup>Estimated location of incident</Popup>
     </Marker>
   );
@@ -53,7 +55,7 @@ export default function DynamicMap({ onLocationSelect, selectedLocation, isThumb
   return (
     <MapContainer
       center={selectedLocation ? [selectedLocation.lat, selectedLocation.lng] : defaultCenter}
-      zoom={selectedLocation ? (isThumbnail ? 14 : 15) : 4}
+      zoom={selectedLocation ? (isThumbnail ? 13 : 15) : 4}
       style={{ height: '100%', width: '100%', position: 'relative', zIndex: 40 }}
       className={isThumbnail ? "rounded" : "rounded-lg"}
       zoomControl={true}
@@ -65,7 +67,7 @@ export default function DynamicMap({ onLocationSelect, selectedLocation, isThumb
       <TileLayer
         attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png"
-        maxZoom={20}
+        maxZoom={15}
       />
       <LocationMarker onLocationSelect={onLocationSelect} selectedLocation={selectedLocation} isThumbnail={isThumbnail} />
     </MapContainer>

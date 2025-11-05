@@ -1015,7 +1015,7 @@ export default function LicensePlateReporter() {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <h3 className="text-xl font-bold text-[#60a5fa] mb-2">{report.plate}</h3>
-                          <p className="text-sm text-[#94a3b8] mb-3">{report.state_code} • {report.city}</p>
+                          <p className="text-sm text-[#94a3b8]">{report.state_code} • {report.city}</p>
                         </div>
                         <span className="text-xs text-[#94a3b8]">{formatTimeAgo(report.created_at)}</span>
                       </div>
