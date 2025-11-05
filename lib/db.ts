@@ -23,9 +23,24 @@ db.exec(`
     contact_ok BOOLEAN DEFAULT FALSE,
     incident_at TEXT NOT NULL,
     created_at TEXT NOT NULL,
-    media_count INTEGER DEFAULT 0
+    media_count INTEGER DEFAULT 0,
+    latitude REAL,
+    longitude REAL
   )
 `);
+
+// Add latitude and longitude columns if they don't exist (for existing databases)
+try {
+  db.exec(`ALTER TABLE reports ADD COLUMN latitude REAL`);
+} catch (error) {
+  // Column might already exist, ignore error
+}
+
+try {
+  db.exec(`ALTER TABLE reports ADD COLUMN longitude REAL`);
+} catch (error) {
+  // Column might already exist, ignore error
+}
 
 export default db;
 
@@ -34,8 +49,8 @@ export const insertReport = db.prepare(`
   INSERT INTO reports (
     id, plate, state_code, city, violation, vehicle_type, color,
     make, model, year, gender_observed, description, reporter_email,
-    contact_ok, incident_at, created_at, media_count
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    contact_ok, incident_at, created_at, media_count, latitude, longitude
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
 
 export const getAllReports = db.prepare(`

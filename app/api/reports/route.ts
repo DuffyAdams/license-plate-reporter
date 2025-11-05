@@ -71,7 +71,9 @@ const apiReportSchema = z.object({
   description: z.string().max(500).optional(),
   reporter_email: z.string().email().optional().or(z.literal('')),
   contact_ok: z.number().int().min(0).max(1),
-  media_count: z.number().int().min(0).optional()
+  media_count: z.number().int().min(0).optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional()
 }).refine((data) => {
   // Validate city belongs to state
   const stateName = US_STATES.find(state => state.code === data.state_code)?.name;
@@ -110,7 +112,9 @@ export async function POST(request: NextRequest) {
       description: (formData.get('description') as string) || undefined,
       reporter_email: (formData.get('reporter_email') as string) || undefined,
       contact_ok: formData.get('contact_ok') === 'true' ? 1 : 0,
-      media_count: 0
+      media_count: 0,
+      latitude: formData.get('latitude') ? parseFloat(formData.get('latitude') as string) : undefined,
+      longitude: formData.get('longitude') ? parseFloat(formData.get('longitude') as string) : undefined
     };
 
     // Content moderation
@@ -173,7 +177,9 @@ export async function POST(request: NextRequest) {
       report.contact_ok,
       report.incident_at,
       report.created_at,
-      report.media_count
+      report.media_count,
+      report.latitude || null,
+      report.longitude || null
     );
 
     return NextResponse.json({ success: true, report });

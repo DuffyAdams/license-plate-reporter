@@ -1,10 +1,52 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Camera, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { Camera, AlertCircle, CheckCircle2, X, MapPin } from 'lucide-react';
 import citiesData from '../cities.json';
 import { US_STATES, VIOLATIONS, VEHICLE_TYPES, COLORS, GENDERS, MAKES, StateCode, ViolationType, VehicleType, ColorType, GenderType } from '../lib/constants';
 import { z } from 'zod';
+import MapComponent from './components/MapComponent';
+
+function GetCurrentLocation({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) {
+  const [gettingLocation, setGettingLocation] = useState(false);
+
+  const getCurrentLocation = () => {
+    setGettingLocation(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          onLocationSelect(latitude, longitude);
+          setGettingLocation(false);
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          setGettingLocation(false);
+          alert('Unable to get your location. Please click on the map to set the location manually.');
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
+        }
+      );
+    } else {
+      alert('Geolocation is not supported by this browser.');
+      setGettingLocation(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={getCurrentLocation}
+      disabled={gettingLocation}
+      className="bg-[#60a5fa] hover:bg-[#5394e3] disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+      type="button"
+    >
+      {gettingLocation ? 'Getting Location...' : '📍 Use My Location'}
+    </button>
+  );
+}
 
 const ALL_CITIES = Object.values(citiesData).flat();
 
@@ -24,7 +66,9 @@ const reportSchema = z.object({
   gender_observed: z.enum(['female', 'male', '']).optional(),
   description: z.string().max(500).optional(),
   reporter_email: z.string().email().optional().or(z.literal('')),
-  contact_ok: z.boolean()
+  contact_ok: z.boolean(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional()
 }).refine((data) => {
   // Validate city belongs to state
   const stateName = US_STATES.find(state => state.code === data.state_code)?.name;
@@ -55,6 +99,8 @@ interface Report {
   incident_at: string;
   created_at: string;
   media_count: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 // FormData interface with strict unions
@@ -72,6 +118,8 @@ interface FormData {
   description: string;
   reporter_email: string;
   contact_ok: boolean;
+  latitude?: number;
+  longitude?: number;
 }
 
 export default function LicensePlateReporter() {
@@ -95,7 +143,9 @@ export default function LicensePlateReporter() {
     gender_observed: '',
     description: '',
     reporter_email: '',
-    contact_ok: false
+    contact_ok: false,
+    latitude: undefined,
+    longitude: undefined
   });
   const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -113,6 +163,7 @@ export default function LicensePlateReporter() {
     vehicle_type: '',
     plate: ''
   });
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   // Fetch reports on component mount
   useEffect(() => {
@@ -173,6 +224,11 @@ export default function LicensePlateReporter() {
     if (field === 'state_code' || field === 'city') {
       updateCitySuggestions(field === 'state_code' ? value as string : formData.state_code, field === 'city' ? value as string : formData.city);
     }
+  };
+
+  const handleLocationSelect = (lat: number, lng: number) => {
+    setSelectedLocation({ lat, lng });
+    setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
   };
 
   const updateCitySuggestions = (stateCode: string, cityInput: string) => {
@@ -403,7 +459,9 @@ export default function LicensePlateReporter() {
         contact_ok: formData.contact_ok,
         incident_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
-        media_count: filePreviews.filter(p => !p.error).length
+        media_count: filePreviews.filter(p => !p.error).length,
+        latitude: formData.latitude,
+        longitude: formData.longitude
       };
 
       setReports(prev => [newReport, ...prev]);
@@ -422,10 +480,13 @@ export default function LicensePlateReporter() {
         gender_observed: '',
         description: '',
         reporter_email: '',
-        contact_ok: false
+        contact_ok: false,
+        latitude: undefined,
+        longitude: undefined
       });
       setMediaFiles([]);
       setFilePreviews([]);
+      setSelectedLocation(null);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (error: any) {
@@ -761,6 +822,29 @@ export default function LicensePlateReporter() {
                 <p className="text-xs text-[#94a3b8] mt-1 text-right">
                   {formData.description.length}/500 characters
                 </p>
+              </div>
+
+              {/* Location */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium">
+                    <MapPin className="inline mr-2" size={18} />
+                    Estimated Location (optional)
+                  </label>
+                  <GetCurrentLocation onLocationSelect={handleLocationSelect} />
+                </div>
+                <p className="text-xs text-[#94a3b8] mb-3">
+                  Click on the map to mark where this incident occurred
+                </p>
+                <MapComponent
+                  onLocationSelect={handleLocationSelect}
+                  selectedLocation={selectedLocation}
+                />
+                {selectedLocation && (
+                  <p className="text-xs text-[#60a5fa] mt-2">
+                    Location selected: {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
+                  </p>
+                )}
               </div>
 
               {/* Media Upload */}
