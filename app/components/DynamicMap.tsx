@@ -55,13 +55,15 @@ export default function DynamicMap({ onLocationSelect, selectedLocation, isThumb
   return (
     <MapContainer
       center={selectedLocation ? [selectedLocation.lat, selectedLocation.lng] : defaultCenter}
-      zoom={selectedLocation ? (isThumbnail ? 13 : 15) : 4}
+      zoom={selectedLocation ? (isThumbnail ? 10 : 15) : 4}
       style={{ height: '100%', width: '100%', position: 'relative', zIndex: 40 }}
       className={isThumbnail ? "rounded" : "rounded-lg"}
-      zoomControl={true}
-      dragging={true}
-      scrollWheelZoom={true}
-      doubleClickZoom={true}
+      zoomControl={!isThumbnail}
+      dragging={!isThumbnail}
+      scrollWheelZoom={!isThumbnail}
+      doubleClickZoom={!isThumbnail}
+      minZoom={isThumbnail ? 10 : undefined}
+      maxZoom={isThumbnail ? 10 : undefined}
       attributionControl={false}
     >
       <TileLayer
